@@ -79,7 +79,7 @@ payload map ( payload01 , indexOfPayload01 ) -> {
 		</ee:transform>
 	</flow>
 	<flow name="create-accounts" doc:id="5b64e620-fe9e-4f7c-b55a-c1db56a91205" >
-		<set-payload value='{"message": "Account created"}' doc:name="Set Payload" doc:id="713b5c81-4b72-4426-84c3-f94d82adf238" />
+		<set-payload value='{"message": "Account created to database"}' doc:name="Set Payload" doc:id="713b5c81-4b72-4426-84c3-f94d82adf238" />
 		<ee:transform doc:name="Transform Message" doc:id="5bc122e5-b629-48f1-8858-d5707bb28f98" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
