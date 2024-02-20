@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="2cef5a3b-0989-47c4-9d7d-23530606ba23" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="56fe693f-4e8e-46db-bd47-4169784b2694" >
+		<db:my-sql-connection host="mudb.learn.mulesoft.com" port="3306" user="mule" password="mule" database="training" />
+	</db:config>
+	<flow name="select-accounts" doc:id="7aae2e32-7a36-47c5-84f6-2f531af139ec" >
+		<set-variable value="#[attributes.queryParams.account_name]" doc:name="accountName" doc:id="1ea610fa-55e5-4e32-80a2-dc2c0c91caee" variableName="accountName"/>
+		<set-variable value="#[attributes.queryParams.account_type]" doc:name="accountType" doc:id="006b9933-9a62-4212-ab9f-45bcd0dbb6d3" variableName="accountType"/>
+		<choice doc:name="Choice" doc:id="3650ba96-2a0e-4170-8b2a-2c810f9b300c" >
+			<when expression="isEmpty(vars.accountType) and  isEmpty(vars.accountName)">
+				<db:select doc:name="Select all" doc:id="ce22d15b-5737-4662-a382-b9f0bd092002" config-ref="Database_Config">
+			<db:sql><![CDATA[select * from flights_customers]]></db:sql>
+		</db:select>
+			</when>
+			<when expression="isEmpty(vars.accountType) and (not isEmpty(vars.accountName))">
+				<db:select doc:name="Select by name" doc:id="54418d60-856c-4b24-8c25-03f6008b2f5e">
+					<db:sql><![CDATA[select * from flights_customers where name = :nm]]></db:sql>
+					<db:input-parameters><![CDATA[#[{
+	nm : vars.accountName
+}]]]></db:input-parameters>
+				</db:select>
+			</when>
+			<when expression="(not isEmpty(vars.accountType)) and  isEmpty(vars.accountName)">
+				<db:select doc:name="Select by type" doc:id="7939fdfc-b21d-42d6-80ca-329f7d1e12a1">
+					<db:sql><![CDATA[select * from flights_customers where accountType = :tp ]]></db:sql>
+					<db:input-parameters><![CDATA[#[{
+	tp : vars.accountType
+}]]]></db:input-parameters>
+				</db:select>
+			</when>
+			<otherwise>
+				<db:select doc:name="Select by type and by name" doc:id="a840c9ba-91e2-4169-a4d9-15e8c3296989">
+					<db:sql><![CDATA[select * from flights_customers where accountType = :tp and name = :nm]]></db:sql>
+					<db:input-parameters><![CDATA[#[{
+	tp : vars.accountType,
+	nm : vars.accountName
+}]]]></db:input-parameters>
+				</db:select>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="Transform Message" doc:id="d82d1e63-d8a7-4cfc-8d8b-d7519146f776" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="select-accounts-by-id" doc:id="8b6184c4-9f94-4f55-9ad1-e470a5c5f164" >
+		<db:select doc:name="Select" doc:id="3ba6fe8c-5ff7-4cac-8de7-76c83118134d" config-ref="Database_Config" >
+			<db:sql ><![CDATA[select * from flights_customers where accountID = :ID]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{'ID' : attributes.uriParams.ID}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="98a58aab-395e-4e88-ac7a-460c16a80374" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	id: payload01.accountID as Number default 0,
+	name: payload01.name default "",
+	"type": payload01.accountType default "",
+	address: ((((payload01.street default "") ++ "" ++ (payload01.city default "")) ++ "" ++ (payload01.state default "")) ++ "" ++ (payload01.postal default "")) ++ "" ++ (payload01.country default ""),
+	air_miles: payload01.miles default 0,
+	created_at: payload01.creationDate as String default ""
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="create-accounts" doc:id="5b64e620-fe9e-4f7c-b55a-c1db56a91205" >
+		<set-payload value='{"message": "Account created"}' doc:name="Set Payload" doc:id="713b5c81-4b72-4426-84c3-f94d82adf238" />
+		<ee:transform doc:name="Transform Message" doc:id="5bc122e5-b629-48f1-8858-d5707bb28f98" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
