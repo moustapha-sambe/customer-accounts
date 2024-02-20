@@ -23,6 +23,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-clean-plugin</artifactId>
 				<version>3.2.0</version>
+				
 			</plugin>
 			<plugin>
 				<groupId>org.mule.tools.maven</groupId>
@@ -36,6 +37,18 @@
 							<artifactId>mysql-connector-java</artifactId>
 						</sharedLibrary>
 					</sharedLibraries>
+					<cloudHubDeployment>
+					    <uri>https://anypoint.mulesoft.com</uri>
+					    <muleVersion>4.4.0</muleVersion>
+					    <username>username</username>
+					    <password>password</password>
+					    <applicationName>cicd-exercise</applicationName>
+					    <environment>Sandbox</environment>
+					    <workers>1</workers>
+					    <properties>
+					      <key>value</key>
+					    </properties>
+					</cloudHubDeployment>
 				</configuration>
 			</plugin>
 		</plugins>
