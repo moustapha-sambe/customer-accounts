@@ -40,15 +40,16 @@
 					<cloudHubDeployment>
 					    <uri>https://anypoint.mulesoft.com</uri>
 					    <muleVersion>4.4.0</muleVersion>
-					    <username>username</username>
-					    <password>password</password>
-					    <applicationName>cicd-exercise</applicationName>
+					    <username>tapha-samb</username>
+					    <password>Tphbms27</password>
+					    <applicationName>customer-accounts</applicationName>
 					    <environment>Sandbox</environment>
 					    <workers>1</workers>
 					    <properties>
 					      <key>value</key>
 					    </properties>
 					</cloudHubDeployment>
+					
 				</configuration>
 			</plugin>
 		</plugins>
